@@ -20,6 +20,10 @@ Token : [
     TokenNumber Str,
     TokenString Str,
 
+    # collections
+    TokenList,
+    TokenMap,
+
     # system
     TokenDo,
     TokenEnd,
@@ -168,7 +172,7 @@ read_number = |state|
         state.position,
         [],
         |number, char|
-            if is_number(char) or char == '.' then
+            if is_number(char) or char == '.' or char == '_' then
                 Continue List.append(number, char)
             else
                 Break number,
@@ -177,6 +181,10 @@ read_number = |state|
 expect
     int = read_number({ input: Str.to_utf8("12345"), tokens: [], position: 0 })
     int == Str.to_utf8("12345")
+
+expect
+    int = read_number({ input: Str.to_utf8("12_345"), tokens: [], position: 0 })
+    int == Str.to_utf8("12_345")
 
 expect
     float = read_number({ input: Str.to_utf8("12.345"), tokens: [], position: 0 })
