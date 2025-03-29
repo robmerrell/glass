@@ -69,6 +69,10 @@ expect
 
     tokens == [TokenModule, TokenIdentifier "hello", TokenDo, TokenPublicFunc, TokenIdentifier "say_hello", TokenLParen, TokenIdentifier "name", TokenRParen, TokenDo, TokenEnd, TokenEnd, TokenEOF]
 
+expect
+    tokens = process("\"testing an easy string()!\"")
+    tokens == [TokenString "testing an easy string()!", TokenEOF]
+
 # process the input from the state until we reach an EOF
 process_state : State -> State
 process_state = |state|
@@ -105,6 +109,11 @@ next_token = |state|
         ' ' -> (1, TokenUnused)
         '\n' -> (1, TokenUnused)
         '\t' -> (1, TokenUnused)
+        '"' ->
+            code_units = read_string(state)
+            str = Str.from_utf8_lossy(code_units)
+            (List.len(code_units) + 2, TokenString str) # adding 2 for opening and closing "
+
         0 -> (1, TokenEOF)
         char ->
             if is_identifier_beginning(char) then
@@ -173,6 +182,29 @@ expect
     float = read_number({ input: Str.to_utf8("12.345"), tokens: [], position: 0 })
     float == Str.to_utf8("12.345")
 
+# baby steps with strings, ignore interpolation for now
+read_string : State -> List U8
+read_string = |state|
+    List.walk_from_until(
+        state.input,
+        state.position + 1, # increment past the initial "
+        [],
+        |str, code_unit|
+            prev_code_unit = List.last(str) ?? 0
+            if code_unit == '"' and prev_code_unit != '\\' then
+                Break str
+            else
+                Continue List.append(str, code_unit),
+    )
+
+expect
+    str = read_string({ input: Str.to_utf8("\"hello!\""), tokens: [], position: 0 })
+    str == Str.to_utf8("hello!")
+
+expect
+    str = read_string({ input: Str.to_utf8("\"hello, \\\"Bilbo Baggins\\\"!\""), tokens: [], position: 0 })
+    str == Str.to_utf8("hello, \\\"Bilbo Baggins\\\"!")
+
 # identifiers in elixir can only begin with letters or _. This might be doing too much and better moved
 # to the parser instead.
 is_identifier_beginning : U8 -> Bool
@@ -203,4 +235,4 @@ expect is_letter('?') == Bool.false
 
 is_valid_punctuation : U8 -> Bool
 is_valid_punctuation = |code_unit|
-    code_unit == '_' or code_unit == '?' or code_unit == '!'
+    code_unit == '_' or code_unit == '?' or code_unit == '!' or code_unit == '.'
