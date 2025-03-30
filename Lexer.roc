@@ -12,6 +12,8 @@ Token : [
     TokenRParen,
     TokenLBrace,
     TokenRBrace,
+    TokenLBracket,
+    TokenRBracket,
 
     # punctuation
     TokenComma,
@@ -54,8 +56,8 @@ process = |input|
     state.tokens
 
 expect
-    tokens = process("()=")
-    tokens == [TokenLParen, TokenRParen, TokenAssign, TokenEOF]
+    tokens = process("()[]=")
+    tokens == [TokenLParen, TokenRParen, TokenLBracket, TokenRBracket, TokenAssign, TokenEOF]
 
 expect
     tokens = process(" 100 + 2.1423 ")
@@ -108,6 +110,8 @@ next_token = |state|
         '+' -> (1, TokenPlus)
         '(' -> (1, TokenLParen)
         ')' -> (1, TokenRParen)
+        '[' -> (1, TokenLBracket)
+        ']' -> (1, TokenRBracket)
         '{' -> (1, TokenLBrace)
         '}' -> (1, TokenRBrace)
         ' ' -> (1, TokenUnused)
