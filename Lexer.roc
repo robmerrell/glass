@@ -4,9 +4,18 @@ Token : [
     # math
     TokenAssign,
     TokenPlus,
+    TokenPlusEquals,
     TokenMinus,
+    TokenMinusEquals,
     TokenMultiply,
+    TokenMultiplyEquals,
+    TokenDivide,
+    TokenDivideEquals,
     TokenEquals,
+    TokenGreaterThan,
+    TokenGreaterThanEquals,
+    TokenLessThan,
+    TokenLessThanEquals,
 
     # surrounds
     TokenLParen,
@@ -16,8 +25,9 @@ Token : [
     TokenLBracket,
     TokenRBracket,
 
-    # punctuation
+    # other symbols
     TokenComma,
+    TokenSingleArrow,
 
     # types
     TokenNumber Str,
@@ -72,6 +82,18 @@ process = |input|
 expect
     tokens = process("()[]=")
     tokens == [TokenLParen, TokenRParen, TokenLBracket, TokenRBracket, TokenAssign, TokenEOF]
+
+expect
+    tokens = process("+-*/<>")
+    tokens == [TokenPlus, TokenMinus, TokenMultiply, TokenDivide, TokenLessThan, TokenGreaterThan, TokenEOF]
+
+expect
+    tokens = process("+= -= *= /= <= >=")
+    tokens == [TokenPlusEquals, TokenMinusEquals, TokenMultiplyEquals, TokenDivideEquals, TokenLessThanEquals, TokenGreaterThanEquals, TokenEOF]
+
+expect
+    tokens = process("->")
+    tokens == [TokenSingleArrow, TokenEOF]
 
 expect
     tokens = process(" 100 + 2.1423 ")
@@ -137,7 +159,37 @@ next_token = |state|
                 '=' -> (2, TokenEquals)
                 _ -> (1, TokenAssign)
 
-        '+' -> (1, TokenPlus)
+        '+' ->
+            when peek(state) is
+                '=' -> (2, TokenPlusEquals)
+                _ -> (1, TokenPlus)
+
+        '-' ->
+            when peek(state) is
+                '=' -> (2, TokenMinusEquals)
+                '>' -> (2, TokenSingleArrow)
+                _ -> (1, TokenMinus)
+
+        '*' ->
+            when peek(state) is
+                '=' -> (2, TokenMultiplyEquals)
+                _ -> (1, TokenMultiply)
+
+        '/' ->
+            when peek(state) is
+                '=' -> (2, TokenDivideEquals)
+                _ -> (1, TokenDivide)
+
+        '<' ->
+            when peek(state) is
+                '=' -> (2, TokenLessThanEquals)
+                _ -> (1, TokenLessThan)
+
+        '>' ->
+            when peek(state) is
+                '=' -> (2, TokenGreaterThanEquals)
+                _ -> (1, TokenGreaterThan)
+
         '(' -> (1, TokenLParen)
         ')' -> (1, TokenRParen)
         '[' -> (1, TokenLBracket)
