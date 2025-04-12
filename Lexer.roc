@@ -6,6 +6,7 @@ Token : [
     TokenPlus,
     TokenMinus,
     TokenMultiply,
+    TokenEquals,
 
     # surrounds
     TokenLParen,
@@ -26,7 +27,14 @@ Token : [
     TokenList,
     TokenMap,
 
-    # system
+    # conditionals
+    TokenIf,
+    TokenWhen,
+    TokenCase,
+    TokenCond,
+    TokenElse,
+
+    # structure
     TokenDo,
     TokenEnd,
     TokenIdentifier Str,
@@ -34,6 +42,7 @@ Token : [
     TokenPublicFunc,
     TokenPrivateFunc,
     TokenEOF,
+
     TokenIllegal U8,
     TokenUnused, # spaces, newlines, tabs, etc.
 ]
@@ -47,6 +56,11 @@ keywords =
     |> Dict.insert("defp", TokenPrivateFunc)
     |> Dict.insert("do", TokenDo)
     |> Dict.insert("end", TokenEnd)
+    |> Dict.insert("if", TokenIf)
+    |> Dict.insert("when", TokenWhen)
+    |> Dict.insert("case", TokenCase)
+    |> Dict.insert("cond", TokenCond)
+    |> Dict.insert("else", TokenElse)
 
 ## Process the given input and generate a list of tokens
 process : Str -> List Token
@@ -74,6 +88,18 @@ expect
         |> process()
 
     tokens == [TokenModule, TokenIdentifier "hello", TokenDo, TokenPublicFunc, TokenIdentifier "say_hello", TokenLParen, TokenIdentifier "name", TokenRParen, TokenDo, TokenEnd, TokenEnd, TokenEOF]
+
+expect
+    tokens =
+        """
+        if a == 1 do
+        else if a == 2 do
+        else
+        end
+        """
+        |> process()
+
+    tokens == [TokenIf, TokenIdentifier "a", TokenEquals, TokenNumber "1", TokenDo, TokenElse, TokenIf, TokenIdentifier "a", TokenEquals, TokenNumber "2", TokenDo, TokenElse, TokenEnd, TokenEOF]
 
 expect
     tokens = process("\"testing an easy string()!\"")
@@ -106,7 +132,11 @@ process_state = |state|
 next_token : State -> (U64, Token)
 next_token = |state|
     when read_char(state) is
-        '=' -> (1, TokenAssign)
+        '=' ->
+            when peek(state) is
+                '=' -> (2, TokenEquals)
+                _ -> (1, TokenAssign)
+
         '+' -> (1, TokenPlus)
         '(' -> (1, TokenLParen)
         ')' -> (1, TokenRParen)
@@ -142,6 +172,9 @@ next_token = |state|
                 (List.len(num), TokenNumber num_string)
             else
                 (1, TokenIllegal char)
+
+peek = |state|
+    List.get(state.input, state.position + 1) ?? 0
 
 # reads a character. If we can't get the char then 0 (EOF) is returned
 read_char : State -> U8
