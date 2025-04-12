@@ -28,8 +28,10 @@ Token : [
 
     # other symbols
     TokenComma,
+    TokenColon,
     TokenRArrow,
     TokenLArrow,
+    TokenDoubleArrow,
 
     # types
     TokenNumber Str,
@@ -90,12 +92,16 @@ expect
     tokens == [TokenPlusEquals, TokenMinusEquals, TokenMultiplyEquals, TokenDivideEquals, TokenLessThanEquals, TokenGreaterThanEquals, TokenEOF]
 
 expect
-    tokens = process("-> <-")
-    tokens == [TokenRArrow, TokenLArrow, TokenEOF]
+    tokens = process("-> <- =>")
+    tokens == [TokenRArrow, TokenLArrow, TokenDoubleArrow, TokenEOF]
 
 expect
     tokens = process(" 100 + 2.1423 ")
     tokens == [TokenNumber "100", TokenPlus, TokenNumber "2.1423", TokenEOF]
+
+expect
+    tokens = process("%{a: 1}")
+    tokens == [TokenMapOpen, TokenIdentifier "a", TokenColon, TokenNumber "1", TokenRBrace, TokenEOF]
 
 expect
     tokens =
@@ -155,6 +161,7 @@ next_token = |state|
         '=' ->
             when peek(state) is
                 '=' -> (2, TokenEquals)
+                '>' -> (2, TokenDoubleArrow)
                 _ -> (1, TokenAssign)
 
         '+' ->
@@ -189,12 +196,19 @@ next_token = |state|
                 '=' -> (2, TokenGreaterThanEquals)
                 _ -> (1, TokenGreaterThan)
 
+        '%' ->
+            when peek(state) is
+                '{' -> (2, TokenMapOpen)
+                _ -> (1, TokenIllegal '%')
+
         '(' -> (1, TokenLParen)
         ')' -> (1, TokenRParen)
         '[' -> (1, TokenLBracket)
         ']' -> (1, TokenRBracket)
         '{' -> (1, TokenLBrace)
         '}' -> (1, TokenRBrace)
+        ',' -> (1, TokenComma)
+        ':' -> (1, TokenColon)
         ' ' -> (1, TokenUnused)
         '\n' -> (1, TokenUnused)
         '\t' -> (1, TokenUnused)
