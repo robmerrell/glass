@@ -24,18 +24,16 @@ Token : [
     TokenRBrace,
     TokenLBracket,
     TokenRBracket,
+    TokenMapOpen,
 
     # other symbols
     TokenComma,
-    TokenSingleArrow,
+    TokenRArrow,
+    TokenLArrow,
 
     # types
     TokenNumber Str,
     TokenString Str,
-
-    # collections
-    TokenList,
-    TokenMap,
 
     # conditionals
     TokenIf,
@@ -92,8 +90,8 @@ expect
     tokens == [TokenPlusEquals, TokenMinusEquals, TokenMultiplyEquals, TokenDivideEquals, TokenLessThanEquals, TokenGreaterThanEquals, TokenEOF]
 
 expect
-    tokens = process("->")
-    tokens == [TokenSingleArrow, TokenEOF]
+    tokens = process("-> <-")
+    tokens == [TokenRArrow, TokenLArrow, TokenEOF]
 
 expect
     tokens = process(" 100 + 2.1423 ")
@@ -167,7 +165,7 @@ next_token = |state|
         '-' ->
             when peek(state) is
                 '=' -> (2, TokenMinusEquals)
-                '>' -> (2, TokenSingleArrow)
+                '>' -> (2, TokenRArrow)
                 _ -> (1, TokenMinus)
 
         '*' ->
@@ -183,6 +181,7 @@ next_token = |state|
         '<' ->
             when peek(state) is
                 '=' -> (2, TokenLessThanEquals)
+                '-' -> (2, TokenLArrow)
                 _ -> (1, TokenLessThan)
 
         '>' ->
