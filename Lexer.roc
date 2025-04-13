@@ -53,6 +53,9 @@ Token : [
     TokenPrivateFunc,
     TokenEOF,
 
+    TokenTrue,
+    TokenFalse,
+
     TokenIllegal U8,
     TokenUnused, # spaces, newlines, tabs, etc.
 ]
@@ -71,6 +74,8 @@ keywords =
     |> Dict.insert("case", TokenCase)
     |> Dict.insert("cond", TokenCond)
     |> Dict.insert("else", TokenElse)
+    |> Dict.insert("true", TokenTrue)
+    |> Dict.insert("false", TokenFalse)
 
 ## Process the given input and generate a list of tokens
 process : Str -> List Token
@@ -100,8 +105,20 @@ expect
     tokens == [TokenNumber "100", TokenPlus, TokenNumber "2.1423", TokenEOF]
 
 expect
-    tokens = process("%{a: 1}")
-    tokens == [TokenMapOpen, TokenIdentifier "a", TokenColon, TokenNumber "1", TokenRBrace, TokenEOF]
+    tokens = process("%{a: 1, \"b\" => 3}")
+    tokens
+    == [
+        TokenMapOpen,
+        TokenIdentifier "a",
+        TokenColon,
+        TokenNumber "1",
+        TokenComma,
+        TokenString "b",
+        TokenDoubleArrow,
+        TokenNumber "3",
+        TokenRBrace,
+        TokenEOF,
+    ]
 
 expect
     tokens =
@@ -126,6 +143,30 @@ expect
         |> process()
 
     tokens == [TokenIf, TokenIdentifier "a", TokenEquals, TokenNumber "1", TokenDo, TokenElse, TokenIf, TokenIdentifier "a", TokenEquals, TokenNumber "2", TokenDo, TokenElse, TokenEnd, TokenEOF]
+
+expect
+    tokens =
+        """
+        when a <- true,
+             b <- false do
+        end
+        """
+        |> process()
+
+    tokens
+    == [
+        TokenWhen,
+        TokenIdentifier "a",
+        TokenLArrow,
+        TokenTrue,
+        TokenComma,
+        TokenIdentifier "b",
+        TokenLArrow,
+        TokenFalse,
+        TokenDo,
+        TokenEnd,
+        TokenEOF,
+    ]
 
 expect
     tokens = process("\"testing an easy string()!\"")
