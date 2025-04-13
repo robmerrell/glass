@@ -43,6 +43,7 @@ Token : [
     TokenCase,
     TokenCond,
     TokenElse,
+    TokenWith,
 
     # structure
     TokenDo,
@@ -74,6 +75,7 @@ keywords =
     |> Dict.insert("case", TokenCase)
     |> Dict.insert("cond", TokenCond)
     |> Dict.insert("else", TokenElse)
+    |> Dict.insert("with", TokenWith)
     |> Dict.insert("true", TokenTrue)
     |> Dict.insert("false", TokenFalse)
 
@@ -147,7 +149,7 @@ expect
 expect
     tokens =
         """
-        when a <- true,
+        with a <- true,
              b <- false do
         end
         """
@@ -155,7 +157,7 @@ expect
 
     tokens
     == [
-        TokenWhen,
+        TokenWith,
         TokenIdentifier "a",
         TokenLArrow,
         TokenTrue,
