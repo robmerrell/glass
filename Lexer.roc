@@ -36,6 +36,7 @@ Token : [
     # types
     TokenNumber Str,
     TokenString Str,
+    TokenAtom Str,
 
     # conditionals
     TokenIf,
@@ -174,6 +175,10 @@ expect
     tokens = process("\"testing an easy string()!\"")
     tokens == [TokenString "testing an easy string()!", TokenEOF]
 
+expect
+    tokens = process(":atom :")
+    tokens == [TokenAtom "atom", TokenColon, TokenEOF]
+
 # process the input from the state until we reach an EOF
 process_state : State -> State
 process_state = |state|
@@ -251,7 +256,15 @@ next_token = |state|
         '{' -> (1, TokenLBrace)
         '}' -> (1, TokenRBrace)
         ',' -> (1, TokenComma)
-        ':' -> (1, TokenColon)
+        ':' ->
+            next = peek(state)
+            if is_identifier_part(next) then
+                atom = read_identifier({ state & position: state.position + 1 })
+                atom_string = Str.from_utf8_lossy(atom)
+                (List.len(atom) + 1, TokenAtom atom_string)
+            else
+                (1, TokenColon)
+
         ' ' -> (1, TokenUnused)
         '\n' -> (1, TokenUnused)
         '\t' -> (1, TokenUnused)
