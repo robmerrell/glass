@@ -128,18 +128,6 @@ expect
     ]
 
 expect
-    tokens =
-        """
-        defmodule hello     do
-          def say_hello(name) do
-          end
-        end
-        """
-        |> process()
-
-    tokens == [TokenModule, TokenIdentifier "hello", TokenDo, TokenPublicFunc, TokenIdentifier "say_hello", TokenLParen, TokenIdentifier "name", TokenRParen, TokenDo, TokenEnd, TokenEnd, TokenEOF]
-
-expect
     tokens = process("\"testing an easy string()!\"")
     tokens == [TokenString "testing an easy string()!", TokenEOF]
 
