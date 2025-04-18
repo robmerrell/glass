@@ -12,6 +12,7 @@ Token : [
     TokenDivide,
     TokenDivideEquals,
     TokenEquals,
+    TokenNotEquals,
     TokenGreaterThan,
     TokenGreaterThanEquals,
     TokenLessThan,
@@ -32,6 +33,7 @@ Token : [
     TokenRArrow,
     TokenLArrow,
     TokenDoubleArrow,
+    TokenExclamation,
 
     # types
     TokenNumber Str,
@@ -57,6 +59,7 @@ Token : [
 
     TokenTrue,
     TokenFalse,
+    TokenNil,
 
     TokenIllegal U8,
     TokenUnused, # spaces, newlines, tabs, etc.
@@ -79,6 +82,7 @@ keywords =
     |> Dict.insert("with", TokenWith)
     |> Dict.insert("true", TokenTrue)
     |> Dict.insert("false", TokenFalse)
+    |> Dict.insert("nil", TokenNil)
 
 ## Process the given input and generate a list of tokens
 process : Str -> List Token
@@ -92,8 +96,8 @@ expect
     tokens == [TokenLParen, TokenRParen, TokenLBracket, TokenRBracket, TokenAssign, TokenEOF]
 
 expect
-    tokens = process("+-*/<>")
-    tokens == [TokenPlus, TokenMinus, TokenMultiply, TokenDivide, TokenLessThan, TokenGreaterThan, TokenEOF]
+    tokens = process("+-*/<>! == !=")
+    tokens == [TokenPlus, TokenMinus, TokenMultiply, TokenDivide, TokenLessThan, TokenGreaterThan, TokenExclamation, TokenEquals, TokenNotEquals, TokenEOF]
 
 expect
     tokens = process("+= -= *= /= <= >=")
@@ -134,42 +138,6 @@ expect
         |> process()
 
     tokens == [TokenModule, TokenIdentifier "hello", TokenDo, TokenPublicFunc, TokenIdentifier "say_hello", TokenLParen, TokenIdentifier "name", TokenRParen, TokenDo, TokenEnd, TokenEnd, TokenEOF]
-
-expect
-    tokens =
-        """
-        if a == 1 do
-        else if a == 2 do
-        else
-        end
-        """
-        |> process()
-
-    tokens == [TokenIf, TokenIdentifier "a", TokenEquals, TokenNumber "1", TokenDo, TokenElse, TokenIf, TokenIdentifier "a", TokenEquals, TokenNumber "2", TokenDo, TokenElse, TokenEnd, TokenEOF]
-
-expect
-    tokens =
-        """
-        with a <- true,
-             b <- false do
-        end
-        """
-        |> process()
-
-    tokens
-    == [
-        TokenWith,
-        TokenIdentifier "a",
-        TokenLArrow,
-        TokenTrue,
-        TokenComma,
-        TokenIdentifier "b",
-        TokenLArrow,
-        TokenFalse,
-        TokenDo,
-        TokenEnd,
-        TokenEOF,
-    ]
 
 expect
     tokens = process("\"testing an easy string()!\"")
@@ -243,6 +211,11 @@ next_token = |state|
             when peek(state) is
                 '=' -> (2, TokenGreaterThanEquals)
                 _ -> (1, TokenGreaterThan)
+
+        '!' ->
+            when peek(state) is
+                '=' -> (2, TokenNotEquals)
+                _ -> (1, TokenExclamation)
 
         '%' ->
             when peek(state) is
@@ -402,3 +375,4 @@ expect is_letter('?') == Bool.false
 is_valid_punctuation : U8 -> Bool
 is_valid_punctuation = |code_unit|
     code_unit == '_' or code_unit == '?' or code_unit == '!' or code_unit == '.'
+

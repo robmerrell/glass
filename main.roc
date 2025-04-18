@@ -4,4 +4,6 @@ import cli.Stdout
 import Lexer
 
 main! = |_args|
-    Stdout.line!("output")
+    out = Lexer.process("a == 1")
+    Stdout.line!(Inspect.to_str(out))
+
