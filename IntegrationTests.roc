@@ -28,12 +28,14 @@ import Lexer
 # the convenient path for now.
 import "testdata/with.exs" as with_test : Str
 import "testdata/with_guards.exs" as with_guards_test : Str
+import "testdata/with_else.exs" as with_else_test : Str
 
 # any test fixture that we want to test needs to be added to this list.
 test_files =
     Dict.empty({})
     |> Dict.insert("with.exs", with_test)
     |> Dict.insert("with_guards.exs", with_guards_test)
+    |> Dict.insert("with_else.exs", with_else_test)
 
 FixtureParserState : [None, ParsingElixir, ParsingTokens, ParsingAST]
 TestData : { filename : Str, elixir : Str, str_tokens : List Str, ast : Str, parser_state : FixtureParserState }
