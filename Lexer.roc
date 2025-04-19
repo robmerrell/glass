@@ -1,4 +1,4 @@
-module [process]
+module [process, Token]
 
 Token : [
     # math
@@ -363,4 +363,3 @@ expect is_letter('?') == Bool.false
 is_valid_punctuation : U8 -> Bool
 is_valid_punctuation = |code_unit|
     code_unit == '_' or code_unit == '?' or code_unit == '!' or code_unit == '.'
-
