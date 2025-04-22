@@ -26,6 +26,7 @@ import Lexer
 
 # test fixtures. These are probably better read at runtime, but this is
 # the convenient path for now.
+import "testdata/if.exs" as if_test : Str
 import "testdata/with.exs" as with_test : Str
 import "testdata/with_guards.exs" as with_guards_test : Str
 import "testdata/with_else.exs" as with_else_test : Str
@@ -33,6 +34,7 @@ import "testdata/with_else.exs" as with_else_test : Str
 # any test fixture that we want to test needs to be added to this list.
 test_files =
     Dict.empty({})
+    |> Dict.insert("if.exs", if_test)
     |> Dict.insert("with.exs", with_test)
     |> Dict.insert("with_guards.exs", with_guards_test)
     |> Dict.insert("with_else.exs", with_else_test)
@@ -85,8 +87,8 @@ token_to_elixir_term : Lexer.Token -> Str
 token_to_elixir_term = |token|
     when token is
         TokenIdentifier x -> "{:TokenIdentifier, \"${x}\"}"
-        TokenNumber x -> "{:TokenNumber,\"${x}\"}"
-        TokenString x -> "{:TokenString,\"${x}\"}"
+        TokenNumber x -> "{:TokenNumber, \"${x}\"}"
+        TokenString x -> "{:TokenString, \"${x}\"}"
         TokenAtom x -> "{:TokenAtom, \"${x}\"}"
         TokenIllegal _x -> "{:TokenIllegal}" # this value isn't important to the tests
         _ -> ":${Inspect.to_str(token)}"
